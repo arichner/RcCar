@@ -1,11 +1,19 @@
-<ion-header>
-  <ion-navbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
-  </ion-navbar>
-</ion-header>
-
-<ion-content padding>
+<ion-content>
+  <ion-card>
+    <ion-card-header>
+      Gyroscope Data
+    </ion-card-header>
+    <ion-card-content>
+      {{gyro_x}}, {{gyro_y}}, {{gyro_z}}
+    </ion-card-content>
+  </ion-card>
+  <ion-card>
+    <ion-card-header>
+      Acceleration Data
+    </ion-card-header>
+    <ion-card-content>
+      {{accel_x}}, {{accel_y}}, {{accel_z}}
+    </ion-card-content>
+  </ion-card>
   <img src="http://131.212.199.237:8080/stream/video.mjpeg" />
 </ion-content>

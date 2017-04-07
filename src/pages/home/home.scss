@@ -1,3 +1,20 @@
 page-home {
+  img {
+    width: 100%;
+    height: 100%;
+  }
 
+  ion-card {
+    position: absolute;
+
+    &:nth-of-type(2)
+    {
+      top: 30%;
+    }
+
+    &:nth-of-type(3)
+    {
+      top: 60%;
+    }
+  }
 }
