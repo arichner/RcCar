@@ -29,6 +29,7 @@
     "ionic-angular": "2.3.0",
     "ionicons": "3.0.0",
     "rxjs": "5.0.1",
+    "socket.io-client": "^1.7.3",
     "sw-toolbox": "3.4.0",
     "zone.js": "0.7.2"
   },
@@ -42,7 +43,16 @@
     "cordova-plugin-statusbar",
     "cordova-plugin-device",
     "cordova-plugin-splashscreen",
-    "ionic-plugin-keyboard"
+    "ionic-plugin-keyboard",
+    "cordova-plugin-ble-central",
+    "cordova-plugin-compat",
+    "cordova-plugin-screen-orientation",
+    {
+      "locator": "https://github.com/vstirbu/PromisesPlugin.git",
+      "id": "es6-promise-plugin"
+    },
+    "cordova-plugin-device-motion",
+    "cordova-plugin-gyroscope"
   ],
   "cordovaPlatforms": [
     "ios",
@@ -50,6 +60,11 @@
       "platform": "ios",
       "version": "",
       "locator": "ios"
+    },
+    {
+      "platform": "android",
+      "version": "",
+      "locator": "android"
     }
   ],
   "description": "RcCar: An Ionic project"

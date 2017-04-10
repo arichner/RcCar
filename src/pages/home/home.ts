@@ -8,12 +8,15 @@ import {
     DeviceMotionAccelerometerOptions
 } from '@ionic-native/device-motion';
 
+import * as io from 'socket.io-client';
+
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html',
   providers: [ScreenOrientation, Gyroscope, DeviceMotion]
 })
 export class HomePage {
+  socket:any;
   gyro_x: any;
   gyro_y: any;
   gyro_z: any;
@@ -25,6 +28,21 @@ export class HomePage {
     this.lock();
     this.gyro(1000);
     this.motion(1000);
+
+    this.socket = io('http://192.168.1.107:3000');
+  }
+
+
+  send_gyro(msg) {
+    if(msg != ''){
+      this.socket.emit('gyro', msg);
+    }
+  }
+
+  send_accel(msg) {
+    if(msg != ''){
+      this.socket.emit('accel', msg);
+    }
   }
 
   lock()
@@ -45,6 +63,7 @@ export class HomePage {
           this.gyro_x = orientation.x;
           this.gyro_y = orientation.y;
           this.gyro_z = orientation.z;
+          this.send_gyro(orientation);
         });
   }
 
@@ -60,6 +79,7 @@ export class HomePage {
           this.accel_x = acceleration.x;
           this.accel_y = acceleration.y;
           this.accel_z = acceleration.z;
+          this.send_accel(acceleration);
         });
   }
 }
