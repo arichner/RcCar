@@ -35,9 +35,9 @@ export class HomePage {
     //this.magnet(100);
 
     //this.initGameSensor(500);
-    //this.send_data(100);
+    this.send_data(100);
 
-    this.socket = io('http://192.168.1.105:3000');
+    this.socket = io('http://131.212.207.174:3000');
   }
 
 
