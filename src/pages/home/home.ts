@@ -9,6 +9,10 @@ import {
 } from '@ionic-native/device-motion';
 
 import * as io from 'socket.io-client';
+import {Observable} from 'rxjs/Rx';
+
+declare var cordova: any;
+declare var sensors: any;
 
 @Component({
   selector: 'page-home',
@@ -17,20 +21,26 @@ import * as io from 'socket.io-client';
 })
 export class HomePage {
   socket:any;
-  gyro_x: any;
-  gyro_y: any;
-  gyro_z: any;
-  accel_x: any;
-  accel_y: any;
-  accel_z: any;
+  gyro_vals = {x: 0, y: 0, z: 0, timestamp: 0};
+  accel_vals= {x: 0, y: 0, z: 0, timestamp: 0};
+  mag = {x: 0, y: 0, z: 0, magnitude: 0};
   accel_subscription: any;
+  data = {gx: 0, gy: 0, gz:0, ax: 0, ay: 0, az: 0, mx: 0, my: 0, mz: 0, timestamp: 0};
+  game: any;
+
   constructor(public navCtrl: NavController, private screenOrientation: ScreenOrientation, private gyroscope: Gyroscope, private deviceMotion: DeviceMotion) {
     this.lock();
-    this.gyro(1000);
-    this.motion(1000);
+    this.gyro(100);
+    this.motion(100);
+    //this.magnet(100);
 
-    this.socket = io('http://192.168.1.107:3000');
+    //this.initGameSensor(500);
+    //this.send_data(100);
+
+    this.socket = io('http://192.168.1.105:3000');
   }
+
+
 
 
   send_gyro(msg) {
@@ -45,9 +55,83 @@ export class HomePage {
     }
   }
 
+  send_mag(msg) {
+    if(msg != ''){
+      this.socket.emit('mag', msg);
+    }
+  }
+
   lock()
   {
     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
+  }
+
+  send_data(ms)
+  {
+    let timer = Observable.timer(100,ms);
+    timer.subscribe(t=> {
+      this.sendAllData();
+    });
+  }
+
+  sendAllData()
+  {
+    // send what we got at this moment
+    this.data.gx        = this.gyro_vals.x;
+    this.data.gy        = this.gyro_vals.y;
+    this.data.gz        = this.gyro_vals.z;
+    this.data.ax        = this.accel_vals.x;
+    this.data.ay        = this.accel_vals.y;
+    this.data.az        = this.accel_vals.z;
+    //this.data.mx        = this.mag.x;
+    //this.data.my        = this.mag.y;
+    //this.data.mz        = this.mag.z;
+    //this.data.timestamp = Date.now();
+
+    this.socket.emit('data', this.data);
+  }
+
+  magnet(ms)
+  {
+    let timer = Observable.timer(100,ms);
+    timer.subscribe(t=> {
+      this.readMagnet();
+    });
+  }
+
+  initGameSensor(ms)
+  {
+    sensors.enableSensor("LINEAR_ACCELERATION");
+    let timer = Observable.timer(100,ms);
+    timer.subscribe(t=> {
+      this.readSensor();
+    });
+  }
+
+  readSensor()
+  {
+    var self = this;
+    sensors.getState(function success(reading){
+        console.log(JSON.stringify(reading));
+        self.game = reading;
+      },
+      function error(message){
+        console.log(message);
+      });
+  }
+
+  readMagnet()
+  {
+    var self = this;
+    cordova.plugins.magnetometer.getReading(
+      function success(reading){
+        //console.log(JSON.stringify(reading));
+        self.mag = reading;
+      },
+      function error(message){
+        console.log(message);
+      }
+    )
   }
 
   gyro(ms)
@@ -59,11 +143,19 @@ export class HomePage {
 
     this.gyroscope.watch(options)
         .subscribe((orientation: GyroscopeOrientation) => {
-          // console.log(orientation.x, orientation.y, orientation.z, orientation.timestamp);
-          this.gyro_x = orientation.x;
-          this.gyro_y = orientation.y;
-          this.gyro_z = orientation.z;
-          this.send_gyro(orientation);
+          //console.log(orientation.x, orientation.y, orientation.z, orientation.timestamp);
+          if(orientation.x > .1) {
+            this.gyro_vals.x = orientation.x;
+          }
+          if(orientation.y > .1)
+          {
+            this.gyro_vals.y = orientation.y;
+          }
+          if(orientation.z > .1)
+          {
+            this.gyro_vals.z = orientation.z;
+          }
+
         });
   }
 
@@ -75,11 +167,19 @@ export class HomePage {
 
     this.accel_subscription = this.deviceMotion.watchAcceleration(options)
         .subscribe((acceleration: DeviceMotionAccelerationData) => {
-          // console.log(acceleration.x, acceleration.y, acceleration.z, acceleration.timestamp);
-          this.accel_x = acceleration.x;
-          this.accel_y = acceleration.y;
-          this.accel_z = acceleration.z;
-          this.send_accel(acceleration);
+          if(this.accel_vals.x - acceleration.x > .1 || this.accel_vals.x - acceleration.x < -.1)
+          {
+            this.accel_vals.x = acceleration.x;
+          }
+          if(this.accel_vals.y - acceleration.y > .1 || this.accel_vals.y - acceleration.y < -.1)
+          {
+            this.accel_vals.y = acceleration.y;
+          }
+          if(this.accel_vals.z - acceleration.z > .1 || this.accel_vals.z - acceleration.z < -.1)
+          {
+            this.accel_vals.z = acceleration.z;
+          }
+
         });
   }
 }

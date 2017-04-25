@@ -4,7 +4,7 @@
       Gyroscope Data
     </ion-card-header>
     <ion-card-content>
-      {{gyro_x}}, {{gyro_y}}, {{gyro_z}}
+      {{gyro_vals.x}}, {{gyro_vals.y}}, {{gyro_vals.z}}
     </ion-card-content>
   </ion-card>
   <ion-card>
@@ -12,8 +12,17 @@
       Acceleration Data
     </ion-card-header>
     <ion-card-content>
-      {{accel_x}}, {{accel_y}}, {{accel_z}}
+      {{accel_vals.x}}, {{accel_vals.y}}, {{accel_vals.z}}
     </ion-card-content>
   </ion-card>
-  <img src="http://192.168.1.107:8080/stream/video.mjpeg" />
+
+  <ion-card>
+    <ion-card-header>
+      Magnetometer Data
+    </ion-card-header>
+    <ion-card-content>
+      {{mag.x}}, {{mag.y}}, {{mag.z}}, {{mag.magnitude}}
+    </ion-card-content>
+  </ion-card>
+  <!--<img src="http://192.168.1.107:8080/stream/video.mjpeg" />-->
 </ion-content>
