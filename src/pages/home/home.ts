@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { ToastController } from 'ionic-angular';
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation';
 import { Gyroscope, GyroscopeOrientation, GyroscopeOptions } from '@ionic-native/gyroscope';
@@ -11,9 +11,6 @@ import {
 import * as io from 'socket.io-client';
 import {Observable} from 'rxjs/Rx';
 
-declare var cordova: any;
-declare var sensors: any;
-
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html',
@@ -23,24 +20,41 @@ export class HomePage {
   socket:any;
   gyro_vals = {x: 0, y: 0, z: 0, timestamp: 0};
   accel_vals= {x: 0, y: 0, z: 0, timestamp: 0};
-  mag = {x: 0, y: 0, z: 0, magnitude: 0};
   accel_subscription: any;
   data = {gx: 0, gy: 0, gz:0, ax: 0, ay: 0, az: 0, mx: 0, my: 0, mz: 0, timestamp: 0};
-  game: any;
+  toast:any;
+  calibrated = false;
 
-  constructor(public navCtrl: NavController, private screenOrientation: ScreenOrientation, private gyroscope: Gyroscope, private deviceMotion: DeviceMotion) {
+  constructor(private toastCtrl: ToastController, private screenOrientation: ScreenOrientation, private gyroscope: Gyroscope, private deviceMotion: DeviceMotion) {
     this.lock();
+    this.presentToast();
     this.gyro(100);
     this.motion(100);
     //this.magnet(100);
 
     //this.initGameSensor(500);
     this.send_data(100);
-
-    this.socket = io('http://131.212.207.174:3000');
+    this.socket = io('http://192.168.1.106:3000');
   }
 
 
+  presentToast() {
+      this.toast = this.toastCtrl.create({
+        message: 'Connecting to the car. . . hold the phone in a natural driving position!',
+        position: 'middle'
+      });
+
+      this.toast.onDidDismiss(() => {
+        console.log('Dismissed toast');
+      });
+
+      this.toast.present();
+  }
+
+  dismissToast()
+  {
+    this.toast.dismiss();
+  }
 
 
   send_gyro(msg) {
@@ -89,50 +103,17 @@ export class HomePage {
     //this.data.timestamp = Date.now();
 
     this.socket.emit('data', this.data);
-  }
-
-  magnet(ms)
-  {
-    let timer = Observable.timer(100,ms);
-    timer.subscribe(t=> {
-      this.readMagnet();
-    });
-  }
-
-  initGameSensor(ms)
-  {
-    sensors.enableSensor("LINEAR_ACCELERATION");
-    let timer = Observable.timer(100,ms);
-    timer.subscribe(t=> {
-      this.readSensor();
-    });
-  }
-
-  readSensor()
-  {
     var self = this;
-    sensors.getState(function success(reading){
-        console.log(JSON.stringify(reading));
-        self.game = reading;
-      },
-      function error(message){
-        console.log(message);
-      });
-  }
-
-  readMagnet()
-  {
-    var self = this;
-    cordova.plugins.magnetometer.getReading(
-      function success(reading){
-        //console.log(JSON.stringify(reading));
-        self.mag = reading;
-      },
-      function error(message){
-        console.log(message);
+    this.socket.on('calibrated', function (data) {
+      if(!self.calibrated)
+      {
+        self.calibrated = true;
+        console.log(data);
+        self.dismissToast();
       }
-    )
+    });
   }
+
 
   gyro(ms)
   {
@@ -144,18 +125,9 @@ export class HomePage {
     this.gyroscope.watch(options)
         .subscribe((orientation: GyroscopeOrientation) => {
           //console.log(orientation.x, orientation.y, orientation.z, orientation.timestamp);
-          if(orientation.x > .1) {
             this.gyro_vals.x = orientation.x;
-          }
-          if(orientation.y > .1)
-          {
             this.gyro_vals.y = orientation.y;
-          }
-          if(orientation.z > .1)
-          {
             this.gyro_vals.z = orientation.z;
-          }
-
         });
   }
 
@@ -167,19 +139,9 @@ export class HomePage {
 
     this.accel_subscription = this.deviceMotion.watchAcceleration(options)
         .subscribe((acceleration: DeviceMotionAccelerationData) => {
-          if(this.accel_vals.x - acceleration.x > .1 || this.accel_vals.x - acceleration.x < -.1)
-          {
             this.accel_vals.x = acceleration.x;
-          }
-          if(this.accel_vals.y - acceleration.y > .1 || this.accel_vals.y - acceleration.y < -.1)
-          {
             this.accel_vals.y = acceleration.y;
-          }
-          if(this.accel_vals.z - acceleration.z > .1 || this.accel_vals.z - acceleration.z < -.1)
-          {
             this.accel_vals.z = acceleration.z;
-          }
-
         });
   }
 }
