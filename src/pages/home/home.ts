@@ -25,37 +25,16 @@ export class HomePage {
   toast:any;
   calibrated = false;
 
-  constructor(private toastCtrl: ToastController, private screenOrientation: ScreenOrientation, private gyroscope: Gyroscope, private deviceMotion: DeviceMotion) {
+  constructor(private screenOrientation: ScreenOrientation, private gyroscope: Gyroscope, private deviceMotion: DeviceMotion) {
     this.lock();
-    this.presentToast();
     this.gyro(100);
     this.motion(100);
     //this.magnet(100);
 
     //this.initGameSensor(500);
     this.send_data(100);
-    this.socket = io('http://192.168.1.106:3000');
+    this.socket = io('http://192.168.42.1:3000');
   }
-
-
-  presentToast() {
-      this.toast = this.toastCtrl.create({
-        message: 'Connecting to the car. . . hold the phone in a natural driving position!',
-        position: 'middle'
-      });
-
-      this.toast.onDidDismiss(() => {
-        console.log('Dismissed toast');
-      });
-
-      this.toast.present();
-  }
-
-  dismissToast()
-  {
-    this.toast.dismiss();
-  }
-
 
   send_gyro(msg) {
     if(msg != ''){
